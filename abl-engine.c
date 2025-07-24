@@ -65,6 +65,7 @@ int main(int argc, const char** argv)
 {
     if (OUTPUT_BUFFER_SIZE < DNSMASQ_LINE_MAX_LENGTH - 2)
         return PANIC;
+
     ListOrigin origin = ListOrigin_invalid;
     const char* input_path = 0;
     const char* output_path = 0;
