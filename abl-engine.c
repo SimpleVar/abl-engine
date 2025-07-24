@@ -269,7 +269,8 @@ int main(int argc, const char** argv)
 
     if (output_i != output_startOfLine)
         finishOutputLine(output, &output_i, &output_startOfLine, fOut);
-    fwrite(output, 1, output_i, fOut);
+    if (fwrite(output, 1, output_i, fOut) < output_i)
+        PANIC;
 
     fclose(fOut);
     fclose(fIn);
