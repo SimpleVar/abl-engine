@@ -76,8 +76,9 @@ int main(int argc, const char** argv)
 
     // for development time
 #if _DEBUG
-    if (0)
+    if (1)
     {
+        fprintf(stderr, "USING DEBUG ARGUMENTS\n");
         argc = 7;
         argv = malloc(sizeof(void*) * argc);
         if (!argv) return PANIC;
@@ -181,18 +182,18 @@ int main(int argc, const char** argv)
             return PANIC;
         case ListOrigin_dbg_generate_input:
             if ((fIn = fopen(input_path, "w")) == 0) return PANIC;
-            fputs("# comment 1\n", fIn) || PANIC;
-            fputs("a.xy\n", fIn) || PANIC;
-            fputs("# comment 2\n", fIn) || PANIC;
+            fputs("# comment 1\n", fIn) == EOF && PANIC;
+            fputs("a.xy\n", fIn) == EOF && PANIC;
+            fputs("# comment 2\n", fIn) == EOF && PANIC;
             for (int i = 1; i < genEntryCount; i++)
             {
                 if (fprintf(fIn, "%i", i) < 0) PANIC;
                 int r = rand() & 15;
-                if (r < 1)		fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
-                else if (r < 2) fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
-                else if (r < 4) fputs("wwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
-                else if (r < 8) fputs("www.domain.ext\n", fIn) || PANIC;
-                else			fputs("domain.ext\n", fIn) || PANIC;
+                if (r < 1)		fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) == EOF && PANIC;
+                else if (r < 2) fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) == EOF && PANIC;
+                else if (r < 4) fputs("wwwwwwwwwwwwww.domain.ext\n", fIn) == EOF && PANIC;
+                else if (r < 8) fputs("www.domain.ext\n", fIn) == EOF && PANIC;
+                else			fputs("domain.ext\n", fIn) == EOF && PANIC;
             }
             return 0;
         case ListOrigin_local:
@@ -272,8 +273,8 @@ int main(int argc, const char** argv)
     if (fwrite(output, 1, output_i, fOut) < output_i)
         PANIC;
 
-    fclose(fOut);
-    fclose(fIn);
+    fclose(fOut) && fprintf(stderr, "error at fclose(fOut)\n");
+    fclose(fIn) && fprintf(stderr, "error at fclose(fIn)\n");
 
     _BREAK;
     return 0;
