@@ -5,7 +5,7 @@
 #ifdef _DEBUG
 #define _BREAK __debugbreak()
 #else
-#define _BREAK 0
+#define _BREAK 1
 #endif
 
 typedef int bool;
