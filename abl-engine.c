@@ -74,7 +74,7 @@ int main(int argc, const char** argv)
     int genEntryCount = 100;
 
     // for development time
-    if (0)
+    if (1)
     {
         argc = 7;
         argv = malloc(sizeof(void*) * argc);
@@ -266,6 +266,7 @@ int main(int argc, const char** argv)
     fclose(fOut);
     fclose(fIn);
 
+    printf("Sign of being alive, done.");
     _BREAK;
     return 0;
 }
