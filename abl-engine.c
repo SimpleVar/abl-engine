@@ -266,7 +266,7 @@ int main(int argc, const char** argv)
     fclose(fOut);
     fclose(fIn);
 
-    printf("Sign of being alive, done.");
+    printf("Sign of being alive, done. btw this is line %i\n", __LINE__);
     _BREAK;
     return 0;
 }
