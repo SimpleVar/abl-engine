@@ -5,7 +5,7 @@
 #ifdef _DEBUG
 #define _BREAK __debugbreak()
 #else
-#define _BREAK 1
+#define _BREAK 0
 #endif
 
 typedef int bool;
@@ -32,7 +32,8 @@ static void finishOutputLine(char* output, int* output_i, int* output_startOfLin
     // write out buffer
     if (*output_i >= OUTPUT_BUFFER_SIZE - DNSMASQ_LINE_MAX_LENGTH - 1)
     {
-        fwrite(output, 1, *output_i, fOut);
+        if (fwrite(output, 1, *output_i, fOut) < *output_i)
+            PANIC;
         *output_startOfLine = 0;
         *output_i = 0;
     }
@@ -89,6 +90,11 @@ int main(int argc, const char** argv)
     }
 #endif
 
+    if (argc == 1)
+    {
+        fprintf(stderr, "Missing arguments, run with -h for help\n");
+        return PANIC;
+    }
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "--help"))
@@ -175,18 +181,18 @@ int main(int argc, const char** argv)
             return PANIC;
         case ListOrigin_dbg_generate_input:
             if ((fIn = fopen(input_path, "w")) == 0) return PANIC;
-            fputs("# comment 1\n", fIn);
-            fputs("a.xy\n", fIn);
-            fputs("# comment 2\n", fIn);
+            fputs("# comment 1\n", fIn) || PANIC;
+            fputs("a.xy\n", fIn) || PANIC;
+            fputs("# comment 2\n", fIn) || PANIC;
             for (int i = 1; i < genEntryCount; i++)
             {
-                fprintf(fIn, "%i", i);
+                if (fprintf(fIn, "%i", i) < 0) PANIC;
                 int r = rand() & 15;
-                if (r < 1)		fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn);
-                else if (r < 2) fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn);
-                else if (r < 4) fputs("wwwwwwwwwwwwww.domain.ext\n", fIn);
-                else if (r < 8) fputs("www.domain.ext\n", fIn);
-                else			fputs("domain.ext\n", fIn);
+                if (r < 1)		fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
+                else if (r < 2) fputs("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
+                else if (r < 4) fputs("wwwwwwwwwwwwww.domain.ext\n", fIn) || PANIC;
+                else if (r < 8) fputs("www.domain.ext\n", fIn) || PANIC;
+                else			fputs("domain.ext\n", fIn) || PANIC;
             }
             return 0;
         case ListOrigin_local:
@@ -268,7 +274,6 @@ int main(int argc, const char** argv)
     fclose(fOut);
     fclose(fIn);
 
-    printf("Sign of being alive, done. btw this is line %i\n", __LINE__);
     _BREAK;
     return 0;
 }
