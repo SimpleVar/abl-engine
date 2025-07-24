@@ -63,6 +63,8 @@ typedef enum { ListOrigin_invalid, ListOrigin_local, ListOrigin_download, ListOr
 
 int main(int argc, const char** argv)
 {
+    printf("this is line %i\n", __LINE__);
+
     if (OUTPUT_BUFFER_SIZE < DNSMASQ_LINE_MAX_LENGTH - 2)
         return PANIC;
 
