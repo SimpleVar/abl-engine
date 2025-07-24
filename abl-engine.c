@@ -63,8 +63,6 @@ typedef enum { ListOrigin_invalid, ListOrigin_local, ListOrigin_download, ListOr
 
 int main(int argc, const char** argv)
 {
-    printf("this is line %i\n", __LINE__);
-
     if (OUTPUT_BUFFER_SIZE < DNSMASQ_LINE_MAX_LENGTH - 2)
         return PANIC;
 
@@ -76,7 +74,8 @@ int main(int argc, const char** argv)
     int genEntryCount = 100;
 
     // for development time
-    if (1)
+#if _DEBUG
+    if (0)
     {
         argc = 7;
         argv = malloc(sizeof(void*) * argc);
@@ -88,6 +87,7 @@ int main(int argc, const char** argv)
         argv[5] = "-t";
         argv[6] = "local";
     }
+#endif
 
     for (int i = 1; i < argc; i++)
     {
