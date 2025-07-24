@@ -2,10 +2,16 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef _DEBUG
+#define _BREAK __debugbreak()
+#else
+#define _BREAK
+#endif
+
 typedef int bool;
 #define false 0
 #define true 1
-#define PANIC (exit(__LINE__), 1)
+#define PANIC (_BREAK, exit(__LINE__), 1)
 
 #define OUTPUT_BUFFER_SIZE 32768ull
 #define DNSMASQ_LINE_MAX_LENGTH 1024
@@ -17,7 +23,7 @@ typedef int bool;
 static void finishOutputLine(char* output, int* output_i, int* output_startOfLine, FILE* fOut)
 {
     // add suffix
-    memcpy_s(output + *output_i, OUTPUT_BUFFER_SIZE - *output_i, OUTPUT_SUFFIX, sizeof(OUTPUT_SUFFIX) - 1) && PANIC;
+    memcpy(output + *output_i, OUTPUT_SUFFIX, sizeof(OUTPUT_SUFFIX) - 1) || PANIC;
     *output_i += sizeof(OUTPUT_SUFFIX) - 1;
 
     output[*output_i] = '\n';
@@ -55,11 +61,10 @@ static void printHelp(void)
 
 typedef enum { ListOrigin_invalid, ListOrigin_local, ListOrigin_download, ListOrigin_dbg_generate_input } ListOrigin;
 
-int main(const int argc, const char** const argv)
+int main(int argc, const char** argv)
 {
     if (OUTPUT_BUFFER_SIZE < DNSMASQ_LINE_MAX_LENGTH - 2)
         return PANIC;
-
     ListOrigin origin = ListOrigin_invalid;
     const char* input_path = 0;
     const char* output_path = 0;
@@ -67,9 +72,22 @@ int main(const int argc, const char** const argv)
     FILE* fOut = stdout;
     int genEntryCount = 100;
 
+    if (0)
+    {
+        argc = 7;
+        argv = malloc(sizeof(void*) * argc);
+        if (!argv) return PANIC;
+        argv[1] = "-i";
+        argv[2] = "_dbg";
+        argv[3] = "-o";
+        argv[4] = "_dbg";
+        argv[5] = "-t";
+        argv[6] = "local";
+    }
+
     for (int i = 1; i < argc; i++)
     {
-        if (!_strcmpi(argv[i], "--help"))
+        if (!strcmp(argv[i], "--help"))
         {
             printHelp();
             return 0;
@@ -84,11 +102,11 @@ int main(const int argc, const char** const argv)
                 case 't':
                     if (++i >= argc)
                         break;
-                    if (!_strcmpi(argv[i], "local"))
+                    if (!strcmp(argv[i], "local"))
                         origin = ListOrigin_local;
-                    else if (!_strcmpi(argv[i], "dl"))
+                    else if (!strcmp(argv[i], "dl"))
                         origin = ListOrigin_download;
-                    else if (!_strcmpi(argv[i], "gen"))
+                    else if (!strcmp(argv[i], "gen"))
                         origin = ListOrigin_dbg_generate_input;
                     else
                     {
@@ -100,14 +118,14 @@ int main(const int argc, const char** const argv)
                     if (++i >= argc)
                         break;
                     input_path = argv[i];
-                    if (!_strcmpi(input_path, "_dbg"))
+                    if (!strcmp(input_path, "_dbg"))
                         input_path = "C:/Users/SimpleVar/Desktop/dnsmasq/test.txt";
                     continue;
                 case 'o':
                     if (++i >= argc)
                         break;
                     output_path = argv[i];
-                    if (!_strcmpi(output_path, "_dbg"))
+                    if (!strcmp(output_path, "_dbg"))
                         output_path = "C:/Users/SimpleVar/Desktop/dnsmasq/out.txt";
                     continue;
                 case 'n':
@@ -144,7 +162,7 @@ int main(const int argc, const char** const argv)
             fprintf(stderr, "Not Implemented yet");
             return PANIC;
         case ListOrigin_dbg_generate_input:
-            if (fopen_s(&fIn, input_path, "w")) return PANIC;
+            if ((fIn = fopen(input_path, "w")) == 0) return PANIC;
             fputs("# comment 1\n", fIn);
             fputs("a.xy\n", fIn);
             fputs("# comment 2\n", fIn);
@@ -165,9 +183,9 @@ int main(const int argc, const char** const argv)
             return PANIC;
     }
 
-    if (fopen_s(&fIn, input_path, "r")) return PANIC;
+    if ((fIn = fopen(input_path, "r")) == 0) return PANIC;
     if (output_path)
-        if (fopen_s(&fOut, output_path, "w")) return PANIC;
+        if ((fOut = fopen(output_path, "w")) == 0) return PANIC;
 
     char* output = (char*)malloc(OUTPUT_BUFFER_SIZE);
     if (!output) return PANIC;
@@ -213,18 +231,18 @@ int main(const int argc, const char** const argv)
         if (output_i == output_startOfLine)
         {
             // prefix a new output line
-            memcpy_s(output + output_i, OUTPUT_BUFFER_SIZE - output_i, OUTPUT_PREFIX, sizeof(OUTPUT_PREFIX) - 1) && PANIC;
+            memcpy(output + output_i, OUTPUT_PREFIX, sizeof(OUTPUT_PREFIX) - 1) || PANIC;
             output_i += sizeof(OUTPUT_PREFIX) - 1;
         }
         else
         {
             // delimiter between domains in the same line
-            memcpy_s(output + output_i, OUTPUT_BUFFER_SIZE - output_i, OUTPUT_DELIM, sizeof(OUTPUT_DELIM) - 1) && PANIC;
+            memcpy(output + output_i, OUTPUT_DELIM, sizeof(OUTPUT_DELIM) - 1) || PANIC;
             output_i += sizeof(OUTPUT_DELIM) - 1;
         }
 
         // append domain to current output line
-        memcpy_s(output + output_i, OUTPUT_BUFFER_SIZE - output_i, buff + start, lineLength) && PANIC;
+        memcpy(output + output_i, buff + start, lineLength) || PANIC;
         output_i += lineLength;
 
         // sanity check
@@ -237,5 +255,7 @@ int main(const int argc, const char** const argv)
 
     fclose(fOut);
     fclose(fIn);
+
+    _BREAK;
     return 0;
 }
