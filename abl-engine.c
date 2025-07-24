@@ -72,6 +72,7 @@ int main(int argc, const char** argv)
     FILE* fOut = stdout;
     int genEntryCount = 100;
 
+    // for development time
     if (0)
     {
         argc = 7;
@@ -96,9 +97,11 @@ int main(int argc, const char** argv)
         {
             switch (argv[i][1])
             {
+                case 'H':
                 case 'h':
                     printHelp();
                     return 0;
+                case 'T':
                 case 't':
                     if (++i >= argc)
                         break;
@@ -114,6 +117,7 @@ int main(int argc, const char** argv)
                         return PANIC;
                     }
                     continue;
+                case 'I':
                 case 'i':
                     if (++i >= argc)
                         break;
@@ -121,6 +125,7 @@ int main(int argc, const char** argv)
                     if (!strcmp(input_path, "_dbg"))
                         input_path = "C:/Users/SimpleVar/Desktop/dnsmasq/test.txt";
                     continue;
+                case 'O':
                 case 'o':
                     if (++i >= argc)
                         break;
@@ -128,6 +133,7 @@ int main(int argc, const char** argv)
                     if (!strcmp(output_path, "_dbg"))
                         output_path = "C:/Users/SimpleVar/Desktop/dnsmasq/out.txt";
                     continue;
+                case 'N':
                 case 'n':
                     if (++i >= argc)
                         break;
@@ -138,6 +144,9 @@ int main(int argc, const char** argv)
                         return PANIC;
                     }
                     continue;
+                default:
+                    fprintf(stderr, "Unrecognized argument %s\n", argv[i]);
+                    return PANIC;
             }
             fprintf(stderr, "Missing value after -%c\n", argv[i][1]);
             return PANIC;
